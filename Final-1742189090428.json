@@ -1,0 +1,654 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "haohanyang-mongodb-datasource",
+        "uid": "deffblcp0yx34d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "palette-classic",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "symlog"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "collection": "readings",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\",\r\n      \"battery_voltage\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"solar\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"pressure\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$addFields\": {\r\n      \"battery_voltage\": {\r\n        \"$toDouble\": \"$battery_voltage\"\r\n      },\r\n      \"solar\": {\r\n        \"$toDouble\": \"$solar\"\r\n      },\r\n      \"pressure\": {\r\n        \"$toDouble\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$group\": {\r\n      \"_id\": {\r\n        \"interval\": {\r\n          \"$dateTrunc\": {\r\n            \"date\": \"$timestamp\",\r\n            \"unit\": \"minute\",\r\n            \"binSize\": 15\r\n          }\r\n        }\r\n      },\r\n      \"avg_battery_voltage\": {\r\n        \"$avg\": \"$battery_voltage\"\r\n      },\r\n      \"avg_solar\": {\r\n        \"$avg\": \"$solar\"\r\n      },\r\n      \"avg_pressure\": {\r\n        \"$avg\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$sort\": {\r\n      \"_id.interval\": 1\r\n    }\r\n  },\r\n  {\r\n    \"$project\": {\r\n      \"_id\": 0,\r\n      \"ts\": \"$_id.interval\",\r\n      \"name\": \"A Pressure\",\r\n      \"value\": {\r\n        \"$toDouble\": {\r\n          \"$divide\": [\r\n            {\r\n              \"$multiply\": [\r\n                {\r\n                  \"$subtract\": [\r\n                    {\r\n                      \"$multiply\": [\r\n                        \"$avg_pressure\",\r\n                        { \"$divide\": [1000, 165] },\r\n                        { \"$divide\": [6.144, 32768] }\r\n                      ]\r\n                    },\r\n                    4\r\n                  ]\r\n                },\r\n                6\r\n              ]\r\n            },\r\n            16\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n]",
+          "refId": "A"
+        },
+        {
+          "collection": "readings",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "hide": false,
+          "isStreaming": false,
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\",\r\n      \"battery_voltage\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"solar\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"pressure\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$addFields\": {\r\n      \"battery_voltage\": {\r\n        \"$toDouble\": \"$battery_voltage\"\r\n      },\r\n      \"solar\": {\r\n        \"$toDouble\": \"$solar\"\r\n      },\r\n      \"pressure\": {\r\n        \"$toDouble\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$group\": {\r\n      \"_id\": {\r\n        \"interval\": {\r\n          \"$dateTrunc\": {\r\n            \"date\": \"$timestamp\",\r\n            \"unit\": \"minute\",\r\n            \"binSize\": 15\r\n          }\r\n        }\r\n      },\r\n      \"avg_battery_voltage\": {\r\n        \"$avg\": \"$battery_voltage\"\r\n      },\r\n      \"avg_solar\": {\r\n        \"$avg\": \"$solar\"\r\n      },\r\n      \"avg_pressure\": {\r\n        \"$avg\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$sort\": {\r\n      \"_id.interval\": 1\r\n    }\r\n  },\r\n  {\r\n    \"$project\": {\r\n      \"_id\": 0,\r\n      \"ts\": \"$_id.interval\",\r\n    \r\n      \"Solar\": {\r\n        \"$toInt\": \"$avg_solar\"\r\n      }\r\n    }\r\n  }\r\n]",
+          "queryType": "table",
+          "refId": "B"
+        },
+        {
+          "collection": "readings",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "hide": false,
+          "isStreaming": false,
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\",\r\n      \"battery_voltage\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"solar\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"pressure\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$addFields\": {\r\n      \"battery_voltage\": {\r\n        \"$toDouble\": \"$battery_voltage\"\r\n      },\r\n      \"solar\": {\r\n        \"$toDouble\": \"$solar\"\r\n      },\r\n      \"pressure\": {\r\n        \"$toDouble\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$group\": {\r\n      \"_id\": {\r\n        \"interval\": {\r\n          \"$dateTrunc\": {\r\n            \"date\": \"$timestamp\",\r\n            \"unit\": \"minute\",\r\n            \"binSize\": 15\r\n          }\r\n        }\r\n      },\r\n      \"avg_battery_voltage\": {\r\n        \"$avg\": \"$battery_voltage\"\r\n      },\r\n      \"avg_solar\": {\r\n        \"$avg\": \"$solar\"\r\n      },\r\n      \"avg_pressure\": {\r\n        \"$avg\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$sort\": {\r\n      \"_id.interval\": 1\r\n    }\r\n  },\r\n{\r\n  \"$project\": {\r\n    \"_id\": 0,\r\n    \"ts\": \"$_id.interval\",\r\n    \"Battery Voltage\": {\r\n      \"$multiply\": [\"$avg_battery_voltage\", 0.000867]\r\n    }\r\n  }\r\n}\r\n]",
+          "queryType": "table",
+          "refId": "C"
+        }
+      ],
+      "title": "Sensor Data",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "haohanyang-mongodb-datasource",
+        "uid": "deffblcp0yx34d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "osm-standard"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 20,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/x-mark.svg",
+                  "mode": "fixed"
+                },
+                "symbolAlign": {
+                  "horizontal": "center",
+                  "vertical": "center"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Layer 1",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "coords",
+          "lat": 22.105258,
+          "lon": 88.06929,
+          "zoom": 11.96
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "collection": "location",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\"\r\n    }\r\n  },\r\n  {\r\n    \"$project\": {\r\n      \"_id\": 0,\r\n      \"node_id\": 1,\r\n      \"latitude\": 1,\r\n      \"longitude\": 1\r\n    }\r\n  }\r\n]",
+          "queryType": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Location of Nodes",
+      "transparent": true,
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "haohanyang-mongodb-datasource",
+        "uid": "deffblcp0yx34d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 8000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "collection": "readings",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\",\r\n      \"battery_voltage\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"solar\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"pressure\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$addFields\": {\r\n      \"battery_voltage\": {\r\n        \"$toDouble\": \"$battery_voltage\"\r\n      },\r\n      \"solar\": {\r\n        \"$toDouble\": \"$solar\"\r\n      },\r\n      \"pressure\": {\r\n        \"$toDouble\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$group\": {\r\n      \"_id\": {\r\n        \"interval\": {\r\n          \"$dateTrunc\": {\r\n            \"date\": \"$timestamp\",\r\n            \"unit\": \"minute\",\r\n            \"binSize\": 5\r\n          }\r\n        }\r\n      },\r\n      \"avg_battery_voltage\": {\r\n        \"$avg\": \"$battery_voltage\"\r\n      },\r\n      \"avg_solar\": {\r\n        \"$avg\": \"$solar\"\r\n      },\r\n      \"avg_pressure\": {\r\n        \"$avg\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n\r\n    {\r\n    \"$project\": {\r\n      \"value\": {\r\n        \"$toDouble\": {\r\n          \"$divide\": [\r\n            {\r\n              \"$multiply\": [\r\n                {\r\n                  \"$subtract\": [\r\n                    {\r\n                      \"$multiply\": [\r\n                        \"$avg_pressure\",\r\n                        { \"$divide\": [1000, 165] },\r\n                        { \"$divide\": [6.144, 32768] }\r\n                      ]\r\n                    },\r\n                    4\r\n                  ]\r\n                },\r\n                6\r\n              ]\r\n            },\r\n            16\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n\r\n]",
+          "queryType": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Pressure",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "haohanyang-mongodb-datasource",
+        "uid": "deffblcp0yx34d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 21000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "collection": "readings",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\",\r\n      \"battery_voltage\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"solar\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"pressure\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$addFields\": {\r\n      \"battery_voltage\": {\r\n        \"$toDouble\": \"$battery_voltage\"\r\n      },\r\n      \"solar\": {\r\n        \"$toDouble\": \"$solar\"\r\n      },\r\n      \"pressure\": {\r\n        \"$toDouble\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$group\": {\r\n      \"_id\": {\r\n        \"interval\": {\r\n          \"$dateTrunc\": {\r\n            \"date\": \"$timestamp\",\r\n            \"unit\": \"minute\",\r\n            \"binSize\": 5\r\n          }\r\n        }\r\n      },\r\n      \"avg_battery_voltage\": {\r\n        \"$avg\": \"$battery_voltage\"\r\n      },\r\n      \"avg_solar\": {\r\n        \"$avg\": \"$solar\"\r\n      },\r\n      \"avg_pressure\": {\r\n        \"$avg\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$project\": {\r\n      \"value\": {\r\n        \"$multiply\": [\r\n          \"$avg_battery_voltage\",\r\n          0.000867\r\n        ]\r\n      }\r\n    }\r\n    }\r\n  ]",
+          "queryType": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Battery Voltage",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "haohanyang-mongodb-datasource",
+        "uid": "deffblcp0yx34d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "collection": "readings",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "queryLanguage": "json",
+          "queryText": "[\r\n  {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\",\r\n      \"battery_voltage\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"solar\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      },\r\n      \"pressure\": {\r\n        \"$exists\": true,\r\n        \"$ne\": null\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$addFields\": {\r\n      \"battery_voltage\": {\r\n        \"$toDouble\": \"$battery_voltage\"\r\n      },\r\n      \"solar\": {\r\n        \"$toDouble\": \"$solar\"\r\n      },\r\n      \"pressure\": {\r\n        \"$toDouble\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"$group\": {\r\n      \"_id\": {\r\n        \"interval\": {\r\n          \"$dateTrunc\": {\r\n            \"date\": \"$timestamp\",\r\n            \"unit\": \"minute\",\r\n            \"binSize\": 5\r\n          }\r\n        }\r\n      },\r\n      \"avg_battery_voltage\": {\r\n        \"$avg\": \"$battery_voltage\"\r\n      },\r\n      \"avg_solar\": {\r\n        \"$avg\": \"$solar\"\r\n      },\r\n      \"avg_pressure\": {\r\n        \"$avg\": \"$pressure\"\r\n      }\r\n    }\r\n  },\r\n\r\n  {\r\n    \"$project\": {\r\n      \"value\": {\r\n        \"$toInt\": \"0\"\r\n      }\r\n    }\r\n  }\r\n]",
+          "refId": "A"
+        }
+      ],
+      "title": "Solar",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "haohanyang-mongodb-datasource",
+        "uid": "deffblcp0yx34d"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "collection": "logs",
+          "datasource": {
+            "type": "haohanyang-mongodb-datasource",
+            "uid": "feeiv3jeldg5cf"
+          },
+          "queryLanguage": "json",
+          "queryText": " [\r\n    {\r\n    \"$match\": {\r\n      \"node_id\": \"$node_id\"\r\n    }\r\n  },\r\n  {\r\n    \"$project\": {\r\n      \"_id\": 0,\r\n      \"node_id\": \"$node_id\",\r\n      \"message\": 1,\r\n      \"timestamp\": 1\r\n    }\r\n  }\r\n]\r\n",
+          "queryType": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Logs",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "5",
+          "value": "5"
+        },
+        "includeAll": true,
+        "name": "node_id",
+        "options": [
+          {
+            "selected": false,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "2",
+            "value": "2"
+          },
+          {
+            "selected": false,
+            "text": "3",
+            "value": "3"
+          },
+          {
+            "selected": false,
+            "text": "4",
+            "value": "4"
+          },
+          {
+            "selected": true,
+            "text": "5",
+            "value": "5"
+          },
+          {
+            "selected": false,
+            "text": "6",
+            "value": "6"
+          },
+          {
+            "selected": false,
+            "text": "7",
+            "value": "7"
+          },
+          {
+            "selected": false,
+            "text": "8",
+            "value": "8"
+          },
+          {
+            "selected": false,
+            "text": "9",
+            "value": "9"
+          },
+          {
+            "selected": false,
+            "text": "10",
+            "value": "10"
+          },
+          {
+            "selected": false,
+            "text": "11",
+            "value": "11"
+          },
+          {
+            "selected": false,
+            "text": "12",
+            "value": "12"
+          },
+          {
+            "selected": false,
+            "text": "13",
+            "value": "13"
+          },
+          {
+            "selected": false,
+            "text": "14",
+            "value": "14"
+          },
+          {
+            "selected": false,
+            "text": "15",
+            "value": "15"
+          },
+          {
+            "selected": false,
+            "text": "16",
+            "value": "16"
+          },
+          {
+            "selected": false,
+            "text": "17",
+            "value": "17"
+          },
+          {
+            "selected": false,
+            "text": "18",
+            "value": "18"
+          },
+          {
+            "selected": false,
+            "text": "19",
+            "value": "19"
+          },
+          {
+            "selected": false,
+            "text": "20",
+            "value": "20"
+          }
+        ],
+        "query": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Final",
+  "uid": "deej1raksp4owc",
+  "version": 3,
+  "weekStart": ""
+}
